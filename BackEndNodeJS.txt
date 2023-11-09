@@ -1,0 +1,128 @@
+* Crear una Carpeta para tu BackEnd:
+MD BackEnd
+* Crear un proyecto y su Archivo Packaje.json:
+npm init -y
+* Instalar Dependencias para API - MERN ( MongoDB, Express, React, NodeJS ):
+npm i nodemon express mongoose dotenv
+* Crear las Carpetas controllers models routes:
+MD controllers MD models MD routes
+* Crear los Archivos JS dentro de las Carpetas correspondientes:
+controllers=>catalogoControllers.js models=>Catalogo.js routes=>catalogo.js
+* En el Archivo index.js:
+Digitar node-express y <enter>
+* En el Archivo packaje.json cambiar dentro del Tag Scripts:
+"start": "nodemon index.js
+* Ejecutar el Servidor:
+npm start
+* Despues de crear una Base de Datos en MongoDB crea un Archivo .env:
+MONGO_URL=mongodb+srv://jreyna2874:925066866JFRA@contapp.qa7svv2.mongodb.net/ContApp
+* En el Archivo index.js debe quedar configurado asi:
+const express = require( 'express' );
+const dotenv = require( 'dotenv' );
+const mongoose = require( 'mongoose' );
+const app = express();
+const port = 3000;
+
+dotenv.config();
+mongoose.connect(process.env.MONGO_URL).then( () => console.log('BD Conectada ...') ).catch( (error) => console.log( error) );
+
+app.get('/', (req, res) => res.send('Bienvenido al Backend de ContApp...'));
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+* En el Archivo Catalogo.js de la Carpeta Models codificar el modelo de la Tabla:
+const mongoose = require( 'mongoose' );
+
+const CatalogoSchema = new mongoose.Schema({
+    title : { type: String, require: true },
+    img : { type: String, require: true },
+},{ timestamps: true });
+
+module.export = mongose.model( 'Catalogo', CatalogoSchema )
+
+* En el Archivo catalogoControllers de la Carpeta Controllers codificar la API:
+const Catalogo = require( '../models/Catalogo' );
+
+module.exports = {
+    createCatalogo: async ( req, res ) => {
+        const newCatalogo = new Catalogo( req.body );
+        try {
+            await newCatalogo.save();
+            res.status( 200 ).json( 'Catálogo creado satisfactoriamente ...' );
+        } catch (error) {
+            res.status( 500 ).json( 'Falló la creación del Catálogo ...' );
+        }
+    },
+
+    getAllCatalogo: async ( req, res ) => {
+        try {
+            const catalogos = await Catalogo.find().sort( { createAt: -1 } );
+            res.status(200).json( catalogos );
+        } catch (error) {
+            res.status(500).json( 'Fallo en la Búsqueda de los Catálogos ...' );
+        }
+    },
+
+    getCatalogo: async ( req, res ) => {
+        try {
+            const catalogo = await Catalogo.findById( req.params.id )
+            res.status(200).json( catalogo );
+        } catch (error) {
+            res.status(500).json( 'Fallo en la Búsqueda del Catálogo ...' );
+        }
+    },
+
+    searchCatalogo: async ( req, res ) => {
+        try {
+            const result = await Catalogo.aggregate(
+                [
+                    {
+                      $search: {
+                        index: "catalogo",
+                        text: {
+                          query: req.params.key,
+                          path: {
+                            wildcard: "*"
+                          }
+                        }
+                      }
+                    }
+                  ]
+            )
+            res.status(200).json( result );
+        } catch (error) {
+            res.status(500).json( 'Fallo en la Búsqueda de los Catálogos ...' );           
+        }
+    },
+}
+
+* En el Archivo catalogo.js de la Carpeta Routes codificar los EndPoints :
+const router = require('express').Router();
+const catalogoController = require( '../controllers/catalogoControllers' );
+
+router.get( '/', catalogoController.getAllCatalogo );
+router.get( '/:id', catalogoController.getCatalogo );
+router.get( '/search/:key', catalogoController.searchCatalogo );
+router.post( '/', catalogoController.createCatalogo );
+
+module.exports = router
+
+* En el Archivo index.js debe quedar configurado definitivamente asi:
+const express = require( 'express' );
+const dotenv = require( 'dotenv' );
+const mongoose = require( 'mongoose' );
+const app = express();
+const catalogoRouter = require( './routes/catalogo' );
+const port = 3000;
+
+dotenv.config();
+mongoose.connect(process.env.MONGO_URL).then( () => console.log('BD Conectada ...') ).catch( (error) => console.log( error) );
+
+app.use( express.json( { limit: '10mb' } ) );
+app.use( express.urlencoded( { limit: '10mb', extended: true } ) );
+
+app.use( '/api/catalogo', catalogoRouter );
+
+app.listen( process.env.PORT || port, () => console.log( `Example app listening on port ${ process.env.PORT }!` ) );
+
+* Inicializar el Servidor Nuevamente :
+npm start
