@@ -126,3 +126,28 @@ app.listen( process.env.PORT || port, () => console.log( `Example app listening 
 
 * Inicializar el Servidor Nuevamente :
 npm start
+
+* Subir a GitHub el proyecto, para poder hacer Deploy en VERCEL.
+
+* Para desplegar (Deploy) a un Servidor crear el archivo verce.json:
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "./index.js",
+            "use": "@vercel/node"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "/"
+        }
+    ]
+}
+
+* En la web de VERCEL, crear las variables de entorno:
+MONGO_URL=mongodb+srv://jreyna2874:925066866JFRA@contapp.qa7svv2.mongodb.net/ContApp
+PORT = 3000
+
+* Ahora si Deploy...

@@ -13,20 +13,20 @@ module.exports = {
 
     getAllConsulta: async ( req, res ) => {
         try {
-            const consulta = await Consulta.find();
+            const consulta = await Consulta.find(req.params);
             res.status(200).json( consulta )
         } catch (error) {
             res.status(500).json( 'Fallo en la Búsqueda de las Imágenes de Consultas ...' )
         }
     },
 
-    searchCatalogo: async ( req, res ) => {
+    searchConsulta: async ( req, res ) => {
         try {
-            const result = await Catalogo.aggregate(
+            const result = await Consulta.aggregate(
                 [
                     {
                       $search: {
-                        index: "catalogo",
+                        index: "search",
                         text: {
                           query: req.params.key,
                           path: {
@@ -39,7 +39,7 @@ module.exports = {
             )
             res.status(200).json( result );
         } catch (error) {
-            res.status(500).json( 'Fallo en la Búsqueda de los Catálogos ...' );           
+            res.status(500).json( 'Fallo en la Búsqueda de las Imágenes ...' );           
         }
     },
 }
